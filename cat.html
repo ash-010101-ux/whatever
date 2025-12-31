@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+			<title>Happy New Year</title>
+			<link rel="stylesheet" href="style.css" />
+			<style>
+			html,body{height:100%;margin:0}
+			body{display:flex;flex-direction:column;align-items:center;justify-content:center;background:transparent;min-height:100vh}
+			header{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:auto;padding:12px 0}
+			.header-img{max-width:60vw;max-height:36vh;height:auto;display:block;margin:0 auto}
+			.pixelart-wrap{margin-top:10px}
+		</style>
+	</head>
+	<body>
+		<header>
+			<img class="header-img" src="newyeartext.png" alt="Happy New Year" />
+		</header>
+		<div class="pixelart-wrap" aria-hidden="true">
+            
+					<div class="pixelart-row">
+						<h2 class="pixelart-to-css"></h2>
+						<a class="cookie-link" href="../Fortune Cookie/index.html" aria-label="Open Fortune Cookie">
+							<img class="cookie-btn" src="button cookie.png" alt="cookie button" />
+						</a>
+					</div>
+		</div>
+	</body>
+
+	<!-- background music (place a bg-music.mp3 file in this folder or change the src) -->
+	<audio id="bgMusic" src="bg-music.mp3" loop></audio>
+	<button id="musicToggle" class="music-toggle" aria-expanded="false" aria-label="Open message pad">✉️</button>
+	
+
+	<!-- message pad (hidden until opened) -->
+	<div id="mailPad" class="mail-pad" aria-hidden="true" role="dialog" aria-label="Message pad">
+	  <div class="mail-pad-inner">
+	    <div id="mailView" class="mail-view" style="display:none"></div>
+	    <textarea id="mailText" class="mail-text" placeholder="Write your message..."></textarea>
+		<div class="mail-pad-controls">
+			<button id="saveMail" class="mail-send">Save</button>
+			<button id="closeMail" class="mail-close">Close</button>
+		</div>
+	  </div>
+	</div>
+
+	<script>
+		(function(){
+			const btn = document.getElementById('musicToggle');
+			const pad = document.getElementById('mailPad');
+			const text = document.getElementById('mailText');
+			const save = document.getElementById('saveMail');
+			const view = document.getElementById('mailView');
+			const closeBtn = document.getElementById('closeMail');
+
+			const STORAGE_KEY = 'sharedMessage_v1';
+			const DEFAULT_ENTRY = {
+				text: "Hey, Happy New Year! As this year is ending, I just wanted to say that if I ever was rude or mean to you in 2025, please work on yourselves so I don't have to do it next year hehehe =)))) just kidding, I hope you'll have a wonderful year ahead, peace. -ash",
+				author: ''
+			};
+			// initialize with the user's message (as an object with author) if nothing is saved yet
+			if (!localStorage.getItem(STORAGE_KEY)) {
+				localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_ENTRY));
+			}
+
+			function renderView(){
+				const saved = localStorage.getItem(STORAGE_KEY);
+				if (saved) {
+					let display = saved;
+					try {
+						const obj = JSON.parse(saved);
+						if (obj && obj.text) display = obj.text + "\n\n— " + (obj.author || '');
+					} catch (e) { /* not JSON, use raw string */ }
+					view.textContent = display;
+					view.style.display = 'block';
+					text.style.display = 'none';
+					save.style.display = 'none';
+				} else {
+					view.style.display = 'none';
+					text.style.display = 'block';
+					save.style.display = 'inline-block';
+				}
+			}
+
+			function openPad(){
+				pad.setAttribute('aria-hidden', 'false');
+				pad.style.display = 'block';
+				btn.setAttribute('aria-expanded', 'true');
+				renderView();
+				if (!localStorage.getItem(STORAGE_KEY)) setTimeout(() => text.focus(), 50);
+			}
+
+			function closePad(){
+				pad.setAttribute('aria-hidden', 'true');
+				pad.style.display = 'none';
+				btn.setAttribute('aria-expanded', 'false');
+				btn.focus();
+			}
+
+			btn.addEventListener('click', () => {
+				const hidden = pad.getAttribute('aria-hidden') === 'true';
+				if (hidden) openPad(); else closePad();
+			});
+
+			closeBtn.addEventListener('click', closePad);
+
+			save.addEventListener('click', () => {
+				const value = (text.value || '').trim();
+				if (!value) return alert('Please write a message before saving.');
+				localStorage.setItem(STORAGE_KEY, value);
+				renderView();
+			});
+
+			// Reset button removed — default message can only be restored by updating code/localStorage externally
+
+			// edit button was removed per user request; saved message is view-only unless overwritten by Save
+
+			// close on Escape when pad open
+			document.addEventListener('keydown', (ev) => {
+				if (ev.key === 'Escape' && pad.getAttribute('aria-hidden') === 'false') closePad();
+			});
+		})();
+	</script>
+</html>
